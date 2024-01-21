@@ -1,0 +1,9 @@
+function [A]=LowRankApprox(M,r)
+    M=squeeze(M);
+    [m,n]=size(M);
+    [U,S,V]=svd(M);
+    V=V.';
+    A=zeros(r,m+n+1);
+    A(:,1)=diag(S)(1:r);
+    A(:,2:m+1)=U(:,1:r)';
+    A(:,m+2:m+n+1)=V(1:r,:);
