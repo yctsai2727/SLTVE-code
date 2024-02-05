@@ -13,7 +13,7 @@ id = str2num(argv{1})
 m = 129;
 n = (m - 1) / 2;
 D0 = 0.0001;
-method = @TotalVariation;
+method = @(u) @(d1,d2) DisplacedTotalVariation(d1,d2,u);
 
 %domain info
 xmin = 0;
@@ -64,29 +64,29 @@ for i = 1:m_p
             %size(traj(i,j,:,:,:))
             flag(i,j)=1;
         end
-        if i>1 && flag(i-1,j)==0
+        if i>1 && flag(i-1,j)==0    #left
             Lpdf = (1 / (4 * pi * D0 * dt0) * exp(-1 / (4 * D0 * dt0) * ((x - x0+dx).^2 + (y - y0).^2)));
             traj(i-1,j,:,:,:)=Solver(x,y,x0-dx,y0,t,finalt,dx,dy,dt,dtK,Lpdf,m,n,K,r,M1,M2);
             flag(i-1,j)=1;
-            cache(i,j,2)=MatTrajMetric(traj(i,j,:,:,:),traj(i-1,j,:,:,:),method,decoder);
+            cache(i,j,2)=MatTrajMetric(traj(i-1,j,:,:,:),traj(i,j,:,:,:),method(1),decoder);
         end
-        if j>1 && flag(i,j-1)==0
+        if j>1 && flag(i,j-1)==0    #up
             Updf = (1 / (4 * pi * D0 * dt0) * exp(-1 / (4 * D0 * dt0) * ((x - x0).^2 + (y - y0+dy).^2)));
             traj(i,j-1,:,:,:)=Solver(x,y,x0,y0-dy,t,finalt,dx,dy,dt,dtK,Updf,m,n,K,r,M1,M2);
             flag(i,j-1)=1;
-            cache(i,j,1)=MatTrajMetric(traj(i,j,:,:,:),traj(i,j-1,:,:,:),method,decoder);
+            cache(i,j,1)=MatTrajMetric(traj(i,j-1,:,:,:),traj(i,j,:,:,:),method(2),decoder);
         end
-        if i<m
+        if i<m  #right
             Rpdf = (1 / (4 * pi * D0 * dt0) * exp(-1 / (4 * D0 * dt0) * ((x - x0-dx).^2 + (y - y0).^2)));
             traj(i+1,j,:,:,:)=Solver(x,y,x0+dx,y0,t,finalt,dx,dy,dt,dtK,Rpdf,m,n,K,r,M1,M2);
             flag(i+1,j)=1;
-            right=MatTrajMetric(traj(i,j,:,:,:),traj(i+1,j,:,:,:),method,decoder);
+            right=MatTrajMetric(traj(i,j,:,:,:),traj(i+1,j,:,:,:),method(1),decoder);
         end
-        if j<n
+        if j<n  #down
             Dpdf = (1 / (4 * pi * D0 * dt0) * exp(-1 / (4 * D0 * dt0) * ((x - x0).^2 + (y - y0-dy).^2)));
             traj(i,j+1,:,:,:)=Solver(x,y,x0,y0+dy,t,finalt,dx,dy,dt,dtK,Dpdf,m,n,K,r,M1,M2);
             flag(i,j+1)=1;
-            down=MatTrajMetric(traj(i,j,:,:,:),traj(i,j+1,:,:,:),method,decoder);
+            down=MatTrajMetric(traj(i,j,:,:,:),traj(i,j+1,:,:,:),method(2),decoder);
         end
         sol(i,j)=max(max(cache(i,j,1),down),max(cache(i,j,2),right));
         cache(i+1,j,2)=right;
@@ -118,6 +118,6 @@ runtime = (cputime - starttime) / 60
 
 clear traj;
 
-[str]=strcat("./ParallelSol/DoubleGyre_MatTVNormParaCompuHighRank129x64D0001_",int2str(id),".mat");
+[str]=strcat("./ParallelSol/DoubleGyre_MatTVnormParaCompu129x64D0001HighRank_",int2str(id),".mat");
 
 save(str);
