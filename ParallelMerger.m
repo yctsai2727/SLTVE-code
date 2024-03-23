@@ -1,7 +1,8 @@
-m=129;
+m=257;
 n=(m-1)/2;
-m_d=33;
-n_d=32;
+m_d=65;
+n_d=64;
+epsi=1e-10;
 sol_com=zeros(m_d*4,n_d*2);
 [x, y, dx, dy] = initial(m, n, 0,2,0,1);
 for id=0:7 
@@ -10,18 +11,17 @@ for id=0:7
     % if id_x==3
     %     m_d=129-m_d*3;
     % end
-    if id_x==0||id_x==1
-        [str]=strcat("./ParallelSol/DoubleGyre_MatDisSqrtWeightTVnormParaCompu257*128D000001HighRank_",int2str(id),".mat");
-        load(str);
-        sol_com(id_x*m_d+1:(id_x+1)*m_d,id_y*n_d+1:(id_y+1)*n_d)=sol;
-    else
-        sol_com(id_x*m_d+1:(id_x+1)*m_d,id_y*n_d+1:(id_y+1)*n_d)=zeros(m_d,n_d);
-    end
+    [str]=strcat("./ParallelSol/DoubleGyre_MatDisTVnorm257x128adapD000001HighRank_",int2str(id),".mat");
+    load(str);
+    sol_com(id_x*m_d+1:(id_x+1)*m_d,id_y*n_d+1:(id_y+1)*n_d)=sol;
     %m_d=33;
 end
-sol_com=sol_com(5:m_d*2,5:n-5);
+sol_com=sol_com(10:m-10,10:n-10);
+sol_com=sol_com+(sol_com<epsi)*epsi;
+%sol_com.*imag(log(sol_com))>0
 figure()
-contourf(x(5:m_d*2,5:n-5),y(5:m_d*2,5:n-5),log(sol_com/dx)/10);
+%contourf(x(10:m-10,10:n-10),y(10:m-10,10:n-10),log(sol_com/dx)/10);
+imagesc(x(10:m-10,1),y(1,10:n-10),(log(sol_com/dx)/10)',[0,2]);
 %contourf(x,y,sol_com);
 colorbar
 
