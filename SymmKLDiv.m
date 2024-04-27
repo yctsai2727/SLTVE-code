@@ -6,8 +6,9 @@ function [d]=SymmKLDiv(d1,d2,epsi)
     if nargin <=2
         epsi = 1e-10;
     end
-    d=sqrt(KLDiv(d1,d3,epsi)+KLDiv(d2,d3,epsi));
+    d=sqrt(0.5*KLDiv(d1,d3,epsi)+0.5*KLDiv(d2,d3,epsi));
 
 function [d]=KLDiv(d1,d2,epsi)
+    d1=d1.*(d1>0)+epsi*(d1<=0);
     d2=d2.*(d2>0)+epsi*(d2<=0);
     d=sum(sum(d1.*(log(d1)-log(d2))));

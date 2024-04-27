@@ -6,7 +6,7 @@ function [d]=DisplacedTotalVariation(d1,d2,dirc,l)
     if nargin == 3
         l=1;
     end
-    if dirc==1
+    if dirc==2
         d=sum(sum(abs(d1(:,1:n-1)-d2(:,2:n)).^l));
     elseif
         d=sum(sum(abs(d1(1:m-1,:)-d2(2:m,:)).^l));

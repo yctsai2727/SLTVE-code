@@ -26,14 +26,14 @@ yp3=[yp2(:,2:n),yp2(:,n)];
 
 order=5;
 
-if (order==1)
-    up=(xp1-phi)/dx;
-    um=(phi-xm1)/dx;
-    vp=(yp1-phi)/dy;
-    vm=(phi-ym1)/dy;
+% if (order==1)
+%     up=(xp1-phi)/dx;
+%     um=(phi-xm1)/dx;
+%     vp=(yp1-phi)/dy;
+%     vm=(phi-ym1)/dy;
     
-    return;
-end
+%     return;
+% end
 
 % x-direction
 

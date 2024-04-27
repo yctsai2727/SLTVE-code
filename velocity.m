@@ -20,7 +20,7 @@ function [u,v]=velo1(x,y,t,tf)
 function [u,v]=velo2(x,y,t,tf)
   eps=0.01;
   u=y.*(abs(sqrt(x.*x+y.*y)-0.5)<eps);
-  v=x.*(abs(sqrt(x.*x+y.*y)-0.5)<eps);
+  v=-x.*(abs(sqrt(x.*x+y.*y)-0.5)<eps);
 
 function [u,v]=iden(x,y,t,tf)
   u=0;

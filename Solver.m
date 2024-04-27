@@ -50,6 +50,7 @@ function [sol] = Solver(x,y,x0,y0,t0,finalt,dx,dy,dt,dtK,pdf0,m,n,K,r,M1,M2)
         t = t + dt;
         if mod(k,jump)==0
             %sol=sol+sum(sum(abs(pdf))); %TV-norm
+            %pdf
             sol(c,:,:)=LowRankApprox(pdf,r);
             % if c==25 || c== 50 || c==75
             %     max(max(abs(pdf-LowRankDecoder(sol(c,:,:),r,m,n))))
