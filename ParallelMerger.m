@@ -1,7 +1,7 @@
-m=129;
+m=65;
 n=(m-1)/2;
-m_d=33;
-n_d=32;
+m_d=17;
+n_d=16;
 epsi=1e-10;
 sol_com=zeros(m_d*4,n_d*2);
 [x, y, dx, dy] = initial(m, n, 0,2,0,1);
@@ -11,16 +11,16 @@ for id=0:7
     % if id_x==3
     %     m_d=129-m_d*3;
     % end
-    [str]=strcat("./ParallelSol/SanityCheck//Depth0Cache_",int2str(id),".mat");
+    [str]=strcat("./ParallelSol/SlicedWasserstein/Depth0Cache_",int2str(id),".mat");
     load(str);
     sol_com(id_x*m_d+1:(id_x+1)*m_d,id_y*n_d+1:(id_y+1)*n_d)=sol;
     %m_d=33;
 end
-sol_com=sol_com(3:m-2,3:n-2);
+sol_com=sol_com(1:m,1:n);
 %sol_com=sol_com.*(sol_com>epsi)+epsi*(sol_com<=epsi);
 %sol_com.*imag(log(sol_com))>0
 figure()
-contourf(x(3:m-2,3:n-2),y(3:m-2,3:n-2),log(sol_com/dx)/15);
+contourf(x(1:m,1:n),y(1:m,1:n),log(sol_com/dx)/10);
 %imagesc(x(5:m-5,1),y(1,5:n-5),(log(sol_com/dx)/10)',[0,2]);
 colorbar
 

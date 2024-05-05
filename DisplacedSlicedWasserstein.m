@@ -21,30 +21,29 @@ function [d]=DisplacedSlicedWasserstein(dist1,dist2,x,y,u,k)
     d2_s = d2p(:)(P_ind);
     if u==1
         delta = max((Proj_s-[Proj_s(1,:);Proj_s(1:(m+1)*n-1,:)]),([Proj_s(2:end,:);Proj_s((m+1)*n,:)]-Proj_s));
-        d = max(sum(abs((d1_s-d2_s).*((m+1)*n:-1:1)).*delta));
     else
         delta = max((Proj_s-[Proj_s(1,:);Proj_s(1:m*(n+1)-1,:)]),([Proj_s(2:end,:);Proj_s(m*(n+1),:)]-Proj_s));
-        d = max(sum(abs((d1_s-d2_s).*(m*(n+1):-1:1)).*delta));
     end
+    d = max(sum(abs(cumsum(d1_s)-cumsum(d2_s)).*delta));
 end
 
 function [d1p,d2p,xp,yp] = Padding(d1,d2,x,y,m,n,x0,y0,u)
     if u == 1
-        d1p = [zeros(m,1),d1(:,:)];
-        d2p = [d2(:,:),zeros(m,1)];
-        dx = abs(x(2,1)-x(1,1));
-        xp = x-x0;
-        xp = [xp,xp(m,:)+dx];
-        yp = y-y0;
-        yp = [yp,yp(m,:)];
-    else
         d1p = [zeros(1,n);d1(:,:)];
         d2p = [d2(:,:);zeros(1,n)];
+        dx = abs(x(2,1)-x(1,1));
+        xp = x-x0;
+        xp = [xp(1,:)-dx;xp];
+        yp = y-y0;
+        yp = [yp;yp(m,:)];
+    else
+        d1p = [zeros(m,1),d1(:,:)];
+        d2p = [d2(:,:),zeros(m,1)];
         dy = abs(y(1,2)-y(1,1));
         xp = x-x0;
-        xp = [xp;xp(:,n)];
+        xp = [xp,xp(:,n)];
         yp = y-y0;
-        yp = [yp;yp(:,n)+dy];
+        yp = [yp(:,1)-dy,yp];
     end
 end
 

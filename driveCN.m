@@ -25,7 +25,7 @@ xmax = 2;
 ymin = 0;
 ymax = 1;
 finalt = 10;
-K=100;
+K=50;
 
 %parallel frame parameter
 m_p = 33;
@@ -39,8 +39,8 @@ decoder = @(a,t) {LowRankDecoder(squeeze(a{1})(t,:,:),r,m,n),a{2:end}};
 
 %initialization
 [x, y, dx, dy] = initial(m, n, xmin, xmax, ymin, ymax);
-dt0 = 0.05;
-dt = 0.05;
+dt0 = 0.1;
+dt = 0.1;
 dtK = (finalt-dt0)/(K-1);
 miu = D0 * dt / dx^2;
 M1 = left_mat(miu, m, n);
@@ -54,7 +54,7 @@ Filter=ones(m_p,n_p);
 method = @(u) @(d1,d2) DisplacedSlicedWasserstein(d1,d2,x,y,u);
 
 %folder
-folder_str="./ParallelSol/SanityCheck/";
+folder_str="./ParallelSol/SlicedWasserstein/";
 
 for ad=1:adap_depth
     %main loop
@@ -80,7 +80,7 @@ for ad=1:adap_depth
             end
             down=0;
             right=0;
-            if j==0 && i>1 && (id_x<3 || (id_x==3&&i<=m_p-2)) && Filter(i-1,j+1)==1  %zero-th row and point below is anchor, cache bottom value
+            if j==0 && id_y>0 && i>1 && (id_x<3 || (id_x==3&&i<=m_p-2)) && Filter(i-1,j+1)==1  %zero-th row and point below is anchor, cache bottom value
                 cache(n_p+1) = MatTrajMetric({traj(j+1,:,:,:),id_x*m_p+i-1,id_y*n_p+j},{traj(j+2,:,:,:),id_x*m_p+i-1,id_y*n_p+j+1},K,method(2),decoder);
             elseif j>0 && j<n_p+1 %non-zero-th or n_p+1-th row
                 if i==1 && id_x>0 && Filter(i,j)==1 %first col, not on the boundary, lack of right info, only cache value
