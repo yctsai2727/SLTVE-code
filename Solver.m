@@ -1,14 +1,16 @@
-function [sol] = Solver(x,y,x0,y0,t0,finalt,dx,dy,dt,dtK,pdf0,m,n,K,r,M1,M2)
-
+function [sol] = Solver(x,y,t0,finalt,dx,dy,dt,pdf0,K,r,M1,M2)
+    sub_start = cputime;
+    [m,n] = size(x);
+    flag = false;
     pdf=pdf0;
-    k=1;
+    k=2;
     c=2;
     sol=zeros(K,r,m+n+1);
     sol(1,:,:)=LowRankApprox(pdf0,r);
-    jump=ceil(dtK/dt);
+    jump = floor(floor((finalt-t0)/dt)/(K-2));
     t=t0;
 
-    velo=velocity(1);
+    velo=OSCARwrapper(dt);
 
     while (t < finalt)
         %%%%%%%%%%%% step 1 %%%%%%%%%%%%%%%%
@@ -18,7 +20,7 @@ function [sol] = Solver(x,y,x0,y0,t0,finalt,dx,dy,dt,dtK,pdf0,m,n,K,r,M1,M2)
         phi = x - 0.5 * (0.5 * dt) * (u + u1) + 0.5 * (0.5 * dt)^2 * (u1 .* up + v1 .* vp);
         [vp, up] = gradient(v, dy, dx);
         psi = y - 0.5 * (0.5 * dt) * (v + v1) + 0.5 * (0.5 * dt)^2 * (u1 .* up + v1 .* vp);
-        pdf = interp2(x', y', pdf', phi', psi', 'cubic')';
+        pdf = interp2(x', y', pdf', phi', psi', 'cubic',0)';
         pdf = PDFnormalize(pdf, dx, dy);
         %%%%%%%%%%% step 1 %%%%%%%%%%%%%%%%
 
@@ -44,14 +46,21 @@ function [sol] = Solver(x,y,x0,y0,t0,finalt,dx,dy,dt,dtK,pdf0,m,n,K,r,M1,M2)
         [xm1, xp1, ym1, yp1] = preparediff(v);
         [up, um, vp, vm] = WENO2(v, xm1, xp1, ym1, yp1, dx, dy);
         psi = y - 0.5 * (0.5 * dt) * (v + v1) + 0.5 * (0.5 * dt)^2 * (u1 .* up + v1 .* vp);
-        pdf = interp2(x', y', pdf', phi', psi', 'cubic')';
+        pdf = interp2(x', y', pdf', phi', psi', 'cubic',0)';
         pdf = PDFnormalize(pdf, dx, dy);
         %%%%%%%%%%% step 3 %%%%%%%%%%%%%%%%
         t = t + dt;
-        if mod(k,jump)==0
+        if t>=finalt && !flag
+            t = t-dt;
+            dt = finalt - t;
+            t = finalt;
+            flag = true;
+        end
+
+        if mod(k-1,jump)==0 && c<K
             %sol=sol+sum(sum(abs(pdf))); %TV-norm
-            %pdf
             sol(c,:,:)=LowRankApprox(pdf,r);
+            %t-dt
             % if c==25 || c== 50 || c==75
             %     max(max(abs(pdf-LowRankDecoder(sol(c,:,:),r,m,n))))
             % end
@@ -61,5 +70,6 @@ function [sol] = Solver(x,y,x0,y0,t0,finalt,dx,dy,dt,dtK,pdf0,m,n,K,r,M1,M2)
         k=k+1;
     end
     sol(K,:,:)=LowRankApprox(pdf,r);
+    solver_duration = cputime() - sub_start
     %N=(k-(mod(k,2)==1))/2;
     %sol=sqrt(sol/N);
