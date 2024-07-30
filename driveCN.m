@@ -10,9 +10,7 @@ starttime = cputime;
 arglist=argv();
 id = str2num(argv{1})
 
-% autoload('c_emd','./pyemd/c_emd.mex');
-% addpath(genpath('./pyemd/'));
-autoload('SFsolver','./SFsolver.oct');
+autoload('SFsolver','./ImprovedSolver/SFsolver.oct');
 addpath(genpath('./OSCAR files/'));
 
 %parameter
@@ -70,7 +68,7 @@ for i = 0:m_p+1
             y0 = y(1, id_y*n_p+j);
             t = dt0;
             pdf = 1 / (4 * pi * D0 * dt0) * exp(-1 / (4 * D0 * dt0) * ((x - x0).^2 + (y - y0).^2));
-            curr = Solver(x,y,t,finalt,dx,dy,dt,pdf,K,r,M1,M2);
+            curr = SFsolver(x,y,t,finalt,dx,dy,dt,pdf,K,r,M1,M2);
         else
             curr = zeros(K,r,m+n+1);
         end
