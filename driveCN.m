@@ -24,7 +24,7 @@ xmin = 0;
 xmax = 50;
 ymin = 0;
 ymax = 25;
-finalt = 50;
+finalt = 10;
 K=51;
 
 %parallel frame parameter
@@ -56,6 +56,13 @@ method = @(u) @(d1,d2) DisplacedSlicedWasserstein(d1,d2,x,y,u,15);
 %folder
 folder_str="./ParallelSol/ToPaper/OSCARD0001/";
 
+%OSCAR setting
+global Trigger = false;
+global U = [];
+global V = [];
+
+OSCARwrapper(dt);
+
 for i = 0:m_p+1
     for j = 0:n_p+1
         if i+j == 0
@@ -68,7 +75,7 @@ for i = 0:m_p+1
             y0 = y(1, id_y*n_p+j);
             t = dt0;
             pdf = 1 / (4 * pi * D0 * dt0) * exp(-1 / (4 * D0 * dt0) * ((x - x0).^2 + (y - y0).^2));
-            curr = SFsolver(x,y,t,finalt,dx,dy,dt,pdf,K,r,M1,M2);
+            curr = Solver(x,y,t,finalt,dx,dy,dt,pdf,K,r,M1,M2);
         else
             curr = zeros(K,r,m+n+1);
         end

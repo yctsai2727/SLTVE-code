@@ -81,9 +81,10 @@ Radius=6.371*10^6;
 u_field=u_temp4*24*3600*360/pi/Radius/2;
 v_field=v_temp4*24*3600*360/pi/Radius/2;
 
-u_field=u_field(:,:,1:250);  % Consider data of the first 50 days
-v_field=v_field(:,:,1:250);
+% u_field=u_field(:,:,1:250);  % Consider data of the first 50 days
+% v_field=v_field(:,:,1:250);
 
-
+u_field=u_field(:,:,1:50);  % Consider data of the first 10 days
+v_field=v_field(:,:,1:50);
 
 

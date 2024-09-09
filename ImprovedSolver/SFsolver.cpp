@@ -2,10 +2,6 @@
 #include<octave/octave.h>
 #include<octave/parse.h>
 #include<chrono>
-#include"OSCAR.h"
-#include <boost/interprocess/managed_shared_memory.hpp>
-
-using namespace boost::interprocess;
 
 NDArray LowRankApprox(octave::interpreter& interp,const Matrix& pdf,int r){
     octave_value_list arg_temp;
@@ -23,25 +19,25 @@ void SaveToSol(NDArray& sol,NDArray pdf,int page){
     sol.insert(pdf,idx);
 }
 
-DEFMETHOD_DLD (SFinit,interp,args,nargout,"Initialize the shared memory"){
-    managed_shared_memory segment(open_only, "OSCAR");
-    OSCAR* wrapper = segment.construct<OSCAR>("OSCARwrapper")(interp);
-    if(wrapper == 0){
-        octave_stdout<<"Wrapper Creation Failed.\n";
-    }
-    return octave_value_list();
-}
+// DEFMETHOD_DLD (SFinit,interp,args,nargout,"Initialize the shared memory"){
+//     managed_shared_memory segment(open_only, "OSCAR");
+//     OSCAR* wrapper = segment.construct<OSCAR>("OSCARwrapper")(interp);
+//     if(wrapper == 0){
+//         octave_stdout<<"Wrapper Creation Failed.\n";
+//     }
+//     return octave_value_list();
+// }
 
-DEFMETHOD_DLD (SFclose,interp,args,nargout,"Inform the shared memory end of subprocess"){
-    managed_shared_memory segment(open_only, "OSCAR");
-    int* counter = segment.find<int>("PC").first;
-    ++(*counter);
-    if(*counter == 8){
-        segment.destroy<OSCAR>("OSCARwrapper");
-        segment.destroy<int>("PC");
-    }
-    return octave_value_list();
-}
+// DEFMETHOD_DLD (SFclose,interp,args,nargout,"Inform the shared memory end of subprocess"){
+//     managed_shared_memory segment(open_only, "OSCAR");
+//     int* counter = segment.find<int>("PC").first;
+//     ++(*counter);
+//     if(*counter == 8){
+//         segment.destroy<OSCAR>("OSCARwrapper");
+//         segment.destroy<int>("PC");
+//     }
+//     return octave_value_list();
+// }
 
 DEFMETHOD_DLD  (SFsolver,interp,args,nargout,"This is a slight improvement of the core solver by isolating the core part and move the iteration to C++."){
     octave_stdout << "SFsolver triggered\n";
@@ -87,34 +83,16 @@ DEFMETHOD_DLD  (SFsolver,interp,args,nargout,"This is a slight improvement of th
     argsin(5) = octave_value(dt);
     argsin(6) = octave_value(M1);
     argsin(7) = octave_value(M2);
-
-    managed_shared_memory segment(open_only, "OSCAR");
-    //offset_ptr<MatVec> U = segment.find<MatVec>("OSCAR_U").first;
-    //offset_ptr<MatVec> V = segment.find<MatVec>("OSCAR_V").first;
-
-    //octave_stdout << (*U)[1];
-    auto velo = segment.find<OSCAR>("OSCARwrapper").first;
-
-    if(velo == 0||velo==nullptr){
-        octave_stdout << "Fail to obtain the velo info\n";   
-    }else{
-        octave_stdout << velo->get(1);
-        // auto temp = velo->get(1);
-        // delete[] temp;
-    }
+    argsin(8) = octave_value(velo_track);
 
     while(t<finalt){
         //const Matrix* temp[6];
-        for(int k=0;k<3;++k){
-            auto temp = velo->get(velo_track+k);
-            argsin(8+2*k) = octave_value(temp[0]);
-            argsin(8+2*k+1) = octave_value(temp[1]);
-            delete[] temp;
-        }
         auto res = interp.feval("SubSolver",argsin,1);
         
         pdf = res(0).matrix_value();
+        ++velo_track;
         argsin(0) = octave_value(pdf);
+        argsin(8) = octave_value(velo_track);
 
         t += dt;
         if(t>=finalt && !flag){

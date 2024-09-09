@@ -10,6 +10,8 @@ function [sol] = Solver(x,y,t0,finalt,dx,dy,dt,pdf0,K,r,M1,M2)
     jump = floor(floor((finalt-t0)/dt)/(K-2));
     t=t0;
 
+    interp_method = 'linear';
+
     velo=OSCARwrapper(dt);
 
     while (t < finalt)
@@ -20,7 +22,7 @@ function [sol] = Solver(x,y,t0,finalt,dx,dy,dt,pdf0,K,r,M1,M2)
         phi = x - 0.5 * (0.5 * dt) * (u + u1) + 0.5 * (0.5 * dt)^2 * (u1 .* up + v1 .* vp);
         [vp, up] = gradient(v, dy, dx);
         psi = y - 0.5 * (0.5 * dt) * (v + v1) + 0.5 * (0.5 * dt)^2 * (u1 .* up + v1 .* vp);
-        pdf = interp2(x', y', pdf', phi', psi', 'cubic',0)';
+        pdf = interp2(x', y', pdf', phi', psi', interp_method,0)';
         pdf = PDFnormalize(pdf, dx, dy);
         %%%%%%%%%%% step 1 %%%%%%%%%%%%%%%%
 
@@ -46,7 +48,7 @@ function [sol] = Solver(x,y,t0,finalt,dx,dy,dt,pdf0,K,r,M1,M2)
         [xm1, xp1, ym1, yp1] = preparediff(v);
         [up, um, vp, vm] = WENO2(v, xm1, xp1, ym1, yp1, dx, dy);
         psi = y - 0.5 * (0.5 * dt) * (v + v1) + 0.5 * (0.5 * dt)^2 * (u1 .* up + v1 .* vp);
-        pdf = interp2(x', y', pdf', phi', psi', 'cubic',0)';
+        pdf = interp2(x', y', pdf', phi', psi', interp_method,0)';
         pdf = PDFnormalize(pdf, dx, dy);
         %%%%%%%%%%% step 3 %%%%%%%%%%%%%%%%
         t = t + dt;
